@@ -5,11 +5,13 @@ self:
 let
   cfg = config.services.snap;
 
-  snap = self.packages.x86_64-linux.default.override {
-    snapConfineWrapper = "${config.security.wrapperDir}/snap-confine-stage-1";
-  };
+  snap =
+    self.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
+      snapConfineWrapper = "${config.security.wrapperDir}/snap-confine-stage-1";
+    };
 
-in {
+in
+{
   options.services.snap = {
     enable = lib.mkEnableOption "snap service";
 
