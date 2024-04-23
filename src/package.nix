@@ -1,5 +1,13 @@
-{ pkgs, lib, stdenv, python3, writeTextDir, fetchFromGitHub, buildGoModule
-, buildFHSEnvChroot, snapConfineWrapper ? null }:
+{ pkgs
+, lib
+, stdenv
+, python3
+, writeTextDir
+, fetchFromGitHub
+, buildGoModule
+, buildFHSEnvBubblewrap
+, snapConfineWrapper ? null
+}:
 
 let
   version = "2.61";
@@ -17,8 +25,13 @@ let
     vendorHash = "sha256-DuvmnYl6ATBknSNzTCCyzYlLA0h+qo7ZmAED0mwIJkY=";
   }).goModules;
 
-  env = buildFHSEnvChroot {
+  env = buildFHSEnvBubblewrap {
     name = "snap-env";
+    extraBwrapArgs = [
+      "--bind /var/snap /var/snap"
+      "--bind /snap /snap"
+      "--bind /etc/oracle-cloud-agent /etc/oracle-cloud-agent"
+    ];
     targetPkgs = pkgs:
       (with pkgs; [
         # Snapd calls
@@ -40,7 +53,8 @@ let
       ]);
   };
 
-in stdenv.mkDerivation {
+in
+stdenv.mkDerivation {
   pname = "snap";
   inherit version src;
 
