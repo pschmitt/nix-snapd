@@ -236,10 +236,15 @@ stdenv.mkDerivation {
           # to write the unit files to /var/lib/snapd/nix-systemd-system
           # instead, and enables them as transient runtime units. However, this
           # means they won't automatically start on boot, which breaks snapd.
-          # To solve this, the next block of code starts all the unit files in
+          # To solve this, the next block of code first symlinks all the
+          # mount units and then starts all the unit files in
           # /var/lib/snapd/nix-systemd-system.
-
-          for path in /var/lib/snapd/nix-systemd-system/*; do
+          for path in /var/lib/snapd/nix-systemd-system/*.mount; do
+            name="$(basename "$path")"
+            rtpath="/run/systemd/system/$name"
+            ln -fs "$path" "$rtpath"
+          done
+          for path in /var/lib/snapd/nix-systemd-system/*.service; do
             name="$(basename "$path")"
             if ! systemctl is-active --quiet "$name"; then
               rtpath="/run/systemd/system/$name"
